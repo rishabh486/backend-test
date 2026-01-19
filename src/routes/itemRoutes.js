@@ -26,4 +26,3 @@ router.put("/:id", uploadImage, updateItem);
 router.delete("/:id", deleteItem);
 
 module.exports = router;
-
