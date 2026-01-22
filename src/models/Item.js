@@ -22,6 +22,16 @@ const itemSchema = new mongoose.Schema(
       min: 0,
       max: 5,
     },
+    category: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    price: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
   },
   {
     timestamps: true,

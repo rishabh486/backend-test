@@ -35,7 +35,14 @@ if (process.env.CLOUDINARY_URL || process.env.CLOUDINARY_CLOUD_NAME) {
     },
     filename: function (req, file, cb) {
       const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-      cb(null, file.fieldname + "-" + uniqueSuffix + "." + file.originalname.split(".").pop());
+      cb(
+        null,
+        file.fieldname +
+          "-" +
+          uniqueSuffix +
+          "." +
+          file.originalname.split(".").pop()
+      );
     },
   });
 }
@@ -64,11 +71,17 @@ exports.uploadImage = upload.single("image");
 // Create a new item
 exports.createItem = async (req, res) => {
   try {
-    const { name, description, rating } = req.body;
+    const { name, description, rating, category, price } = req.body;
 
-    if (!name || !description || rating === undefined) {
+    if (
+      !name ||
+      !description ||
+      rating === undefined ||
+      !category ||
+      price === undefined
+    ) {
       return res.status(400).json({
-        message: "Name, description, and rating are required.",
+        message: "Name, description, rating, category, and price are required.",
       });
     }
 
@@ -76,6 +89,13 @@ exports.createItem = async (req, res) => {
     if (isNaN(ratingNum) || ratingNum < 0 || ratingNum > 5) {
       return res.status(400).json({
         message: "Rating must be a number between 0 and 5.",
+      });
+    }
+
+    const priceNum = parseFloat(price);
+    if (isNaN(priceNum) || priceNum < 0) {
+      return res.status(400).json({
+        message: "Price must be a positive number.",
       });
     }
 
@@ -88,7 +108,9 @@ exports.createItem = async (req, res) => {
         imageUrl = req.file.secure_url || req.file.path;
       } else {
         // Local file - construct full URL
-        const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 4000}`;
+        const baseUrl =
+          process.env.BASE_URL ||
+          `http://localhost:${process.env.PORT || 4000}`;
         imageUrl = `${baseUrl}/uploads/${req.file.filename}`;
       }
     } else if (req.body.imageUrl) {
@@ -105,6 +127,8 @@ exports.createItem = async (req, res) => {
       description,
       imageUrl,
       rating: ratingNum,
+      category,
+      price: priceNum,
     });
 
     res.status(201).json({
@@ -115,6 +139,8 @@ exports.createItem = async (req, res) => {
         description: newItem.description,
         imageUrl: newItem.imageUrl, // Full URL to the image
         rating: newItem.rating,
+        category: newItem.category,
+        price: newItem.price,
         createdAt: newItem.createdAt,
         updatedAt: newItem.updatedAt,
       },
@@ -153,11 +179,12 @@ exports.getItemById = async (req, res) => {
 // Update item
 exports.updateItem = async (req, res) => {
   try {
-    const { name, description, rating, imageUrl } = req.body;
+    const { name, description, rating, imageUrl, category, price } = req.body;
     const updateData = {};
 
     if (name) updateData.name = name;
     if (description) updateData.description = description;
+    if (category) updateData.category = category;
     if (rating !== undefined) {
       const ratingNum = parseFloat(rating);
       if (isNaN(ratingNum) || ratingNum < 0 || ratingNum > 5) {
@@ -166,6 +193,15 @@ exports.updateItem = async (req, res) => {
         });
       }
       updateData.rating = ratingNum;
+    }
+    if (price !== undefined) {
+      const priceNum = parseFloat(price);
+      if (isNaN(priceNum) || priceNum < 0) {
+        return res.status(400).json({
+          message: "Price must be a positive number.",
+        });
+      }
+      updateData.price = priceNum;
     }
 
     // Handle image update
@@ -211,4 +247,3 @@ exports.deleteItem = async (req, res) => {
     res.status(500).json({ message: "Internal server error." });
   }
 };
-
