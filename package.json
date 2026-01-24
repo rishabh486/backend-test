@@ -1,24 +1,37 @@
 {
   "name": "backend-test",
   "version": "1.0.0",
-  "description": "",
+  "description": "Production-ready backend API with authentication, items, and wishlist",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "NODE_ENV=development nodemon src/server.js"
+    "dev": "NODE_ENV=development nodemon src/server.js",
+    "lint": "echo 'Linting not configured'",
+    "test": "echo 'Tests not configured'"
   },
-  "keywords": [],
+  "keywords": ["api", "backend", "express", "mongodb"],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "dotenv": "^16.4.5",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^1.41.0",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
     "express": "^5.2.1",
+    "express-rate-limit": "^7.1.5",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.20.4",
+    "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "multer-storage-cloudinary": "^4.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
   }
 }

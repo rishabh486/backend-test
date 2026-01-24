@@ -56,21 +56,51 @@ exports.addToWishlist = async (req, res) => {
   }
 };
 
-// Get wishlist
+// Get wishlist with pagination
 exports.getWishlist = async (req, res) => {
   try {
-    // Get all wishlist items with populated item details
+    // Get pagination parameters from query string
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    // Validate pagination parameters
+    if (page < 1) {
+      return res.status(400).json({ message: "Page must be greater than 0." });
+    }
+    if (limit < 1 || limit > 100) {
+      return res.status(400).json({ message: "Limit must be between 1 and 100." });
+    }
+
+    // Get total count for pagination metadata
+    const totalItems = await Wishlist.countDocuments();
+
+    // Get paginated wishlist items with populated item details
     const wishlistItems = await Wishlist.find()
       .populate("item")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    // Calculate pagination metadata
+    const totalPages = Math.ceil(totalItems / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
 
     res.json({
-      count: wishlistItems.length,
       wishlist: wishlistItems.map((w) => ({
         id: w._id,
         item: w.item,
         addedAt: w.createdAt,
       })),
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalItems,
+        itemsPerPage: limit,
+        hasNextPage,
+        hasPrevPage,
+      },
     });
   } catch (err) {
     console.error("Get wishlist error:", err);
