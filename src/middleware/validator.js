@@ -129,6 +129,10 @@ const validatePagination = [
     .optional()
     .isInt({ min: 1, max: 100 })
     .withMessage("Limit must be between 1 and 100"),
+  query("itemsPerPage")
+    .optional()
+    .isInt({ min: 1, max: 100 })
+    .withMessage("Items per page must be between 1 and 100"),
   handleValidationErrors,
 ];
 

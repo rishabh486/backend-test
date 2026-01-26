@@ -60,16 +60,17 @@ exports.addToWishlist = async (req, res) => {
 exports.getWishlist = async (req, res) => {
   try {
     // Get pagination parameters from query string
+    // Support both 'limit' and 'itemsPerPage' for backward compatibility
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
+    const itemsPerPage = parseInt(req.query.itemsPerPage || req.query.limit) || 10;
+    const skip = (page - 1) * itemsPerPage;
 
     // Validate pagination parameters
     if (page < 1) {
       return res.status(400).json({ message: "Page must be greater than 0." });
     }
-    if (limit < 1 || limit > 100) {
-      return res.status(400).json({ message: "Limit must be between 1 and 100." });
+    if (itemsPerPage < 1 || itemsPerPage > 100) {
+      return res.status(400).json({ message: "Items per page must be between 1 and 100." });
     }
 
     // Get total count for pagination metadata
@@ -80,10 +81,10 @@ exports.getWishlist = async (req, res) => {
       .populate("item")
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(itemsPerPage);
 
     // Calculate pagination metadata
-    const totalPages = Math.ceil(totalItems / limit);
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
     const hasNextPage = page < totalPages;
     const hasPrevPage = page > 1;
 
@@ -97,7 +98,7 @@ exports.getWishlist = async (req, res) => {
         currentPage: page,
         totalPages,
         totalItems,
-        itemsPerPage: limit,
+        itemsPerPage,
         hasNextPage,
         hasPrevPage,
       },
